@@ -6,7 +6,7 @@ bin/
 obj/
 
 # Exclude DLL files in libs directory but keep README
-libs/*.dll
+# libs/*.dll
 !libs/README.md
 
 # macOS specific
