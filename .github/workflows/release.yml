@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master # Triggers on pushes to the master branch
+      - main
     # tags:
     #  - 'v*' # Temporarily disabled, will be re-enabled later
 
