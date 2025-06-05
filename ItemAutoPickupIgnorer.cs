@@ -15,7 +15,7 @@ namespace ItemAutoPickupIgnorer
     {
         public const string PluginGUID = "stal4gmite.ItemAutoPickupIgnorer";
         public const string PluginName = "Item Auto Pickup Ignorer";
-        public const string ModVersion = "1.1.0";
+        public const string ModVersion = "1.1.1";
 
         public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }        private readonly Harmony harmony = new Harmony(PluginGUID);
         private ConfigEntry<string> items;
