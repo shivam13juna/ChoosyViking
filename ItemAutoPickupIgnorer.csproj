@@ -38,6 +38,8 @@
     <Reference Include="BepInEx" HintPath="$(MSBuildProjectDirectory)\libs\BepInEx.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
     <Reference Include="UnityEngine" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll')" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll')" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll')" />
+    <Reference Include="UnityEngine.PhysicsModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')" />
   </ItemGroup>
 
   <!-- Fallback to available Unity assemblies if local DLLs aren't available -->
