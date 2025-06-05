@@ -1,0 +1,16 @@
+# Visual Studio and build artifacts
+.vs/
+*/bin/
+*/obj/
+bin/
+obj/
+
+# Exclude DLL files in libs directory but keep README
+libs/*.dll
+!libs/README.md
+
+# macOS specific
+.DS_Store
+
+# Keep build scripts
+!build.sh

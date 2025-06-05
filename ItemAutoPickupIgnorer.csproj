@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <AssemblyName>ItemAutoPickupIgnorer</AssemblyName>
+    <RootNamespace>ItemAutoPickupIgnorer</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    
+    <!-- Build Configuration -->
+    <DebugType>embedded</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+  </PropertyGroup>
+
+  <!-- Explicitly include only the files we want -->
+  <ItemGroup>
+    <Compile Include="ItemAutoPickupIgnorer.cs" />
+    <Compile Include="AssemblyInfo.cs" />
+    <None Include="app.config" />
+    <None Include="README.md" />
+    <None Include="stal4gmite.ItemAutoPickupIgnorer.cfg" />
+  </ItemGroup>
+
+  <!-- Exclude files and directories we don't want -->
+  <ItemGroup>
+    <Compile Remove="FeatherExample/**" />
+    <EmbeddedResource Remove="FeatherExample/**" />
+    <None Remove="FeatherExample/**" />
+  </ItemGroup>
+
+  <!-- References to local DLL files -->
+  <ItemGroup>
+    <Reference Include="0Harmony" HintPath="$(MSBuildProjectDirectory)\libs\0Harmony.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
+    <Reference Include="assembly_valheim" HintPath="$(MSBuildProjectDirectory)\libs\assembly_valheim.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\assembly_valheim.dll')" />
+    <Reference Include="BepInEx" HintPath="$(MSBuildProjectDirectory)\libs\BepInEx.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
+    <Reference Include="UnityEngine" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll')" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll')" />
+  </ItemGroup>
+
+  <!-- Fallback to available Unity assemblies if local DLLs aren't available -->
+  <ItemGroup Condition="!Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')">
+    <PackageReference Include="Unity3D.UnityEngine" Version="2018.2.14" PrivateAssets="all" />
+  </ItemGroup>
+
+  <!-- Enable .NET Framework reference assemblies for cross-platform building -->
+  <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+  </ItemGroup>
+
+</Project>
