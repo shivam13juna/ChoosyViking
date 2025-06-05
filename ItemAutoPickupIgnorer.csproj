@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFramework>net481</TargetFramework>
     <AssemblyName>ItemAutoPickupIgnorer</AssemblyName>
     <RootNamespace>ItemAutoPickupIgnorer</RootNamespace>
     <LangVersion>latest</LangVersion>
@@ -13,6 +13,9 @@
     <DebugType>embedded</DebugType>
     <DebugSymbols>true</DebugSymbols>
     <Optimize Condition="'$(Configuration)' == 'Release'">true</Optimize>
+    
+    <!-- Modern BepInEx compatibility -->
+    <RestoreAdditionalProjectSources>https://nuget.bepinex.dev/v3/index.json</RestoreAdditionalProjectSources>
   </PropertyGroup>
 
   <!-- Explicitly include only the files we want -->
@@ -31,8 +34,14 @@
     <None Remove="FeatherExample/**" />
   </ItemGroup>
 
-  <!-- References to local DLL files -->
+  <!-- References to local DLL files with modern BepInEx -->
   <ItemGroup>
+    <!-- Prefer NuGet packages when available for better compatibility -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.22" PrivateAssets="all" Condition="!Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" PrivateAssets="all" />
+    <PackageReference Include="HarmonyX" Version="2.10.1" PrivateAssets="all" Condition="!Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
+    
+    <!-- Local DLL references with fallback -->
     <Reference Include="0Harmony" HintPath="$(MSBuildProjectDirectory)\libs\0Harmony.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
     <Reference Include="assembly_valheim" HintPath="$(MSBuildProjectDirectory)\libs\assembly_valheim.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\assembly_valheim.dll')" />
     <Reference Include="BepInEx" HintPath="$(MSBuildProjectDirectory)\libs\BepInEx.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
@@ -40,6 +49,7 @@
     <Reference Include="UnityEngine.CoreModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll')" />
     <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll')" />
     <Reference Include="UnityEngine.PhysicsModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')" />
+    <Reference Include="UnityEngine.UI" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll')" />
   </ItemGroup>
 
   <!-- Fallback to available Unity assemblies if local DLLs aren't available -->
@@ -49,7 +59,7 @@
 
   <!-- Enable .NET Framework reference assemblies for cross-platform building -->
   <ItemGroup Condition="'$(TargetFramework.TrimEnd(`0123456789`))' == 'net'">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

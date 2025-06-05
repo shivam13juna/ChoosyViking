@@ -4,9 +4,11 @@
 
 A Valheim BepInEx plugin that allows users to disable auto pickup of specific items.
 
-**Version:** 1.0.1  
-**Target:** .NET Framework 4.7.2  
-**Compatibility:** Cross-platform building (Windows/macOS/Linux)
+**Version:** 1.1.0  
+**Target:** .NET Framework 4.8.1  
+**Compatibility:** Cross-platform building (Windows/macOS/Linux)  
+**BepInEx Version:** 5.4.22+ (Compatible with BepInEx 6.0+)  
+**Valheim Version:** 0.218.15+ (Latest tested)
 
 ---
 
@@ -16,8 +18,11 @@ This plugin provides fine-grained control over Valheim's auto-pickup system:
 
 - **3 modes**: Normal Valheim behavior, ignore specific items, or ignore nothing
 - **Configurable item list**: Easily customize which items to ignore
-- **In-game controls**: Press `Left Ctrl + L` to cycle through modes
+- **Configurable controls**: Customize toggle and modifier keys
+- **In-game controls**: Press `Left Ctrl + L` to cycle through modes (configurable)
 - **Real-time feedback**: On-screen messages show current mode
+- **Improved compatibility**: Updated for latest Valheim and BepInEx versions
+- **Better error handling**: Comprehensive logging and error recovery
 
 ---
 
@@ -133,10 +138,20 @@ ItemAutoPickupIgnorer/
 
 ## 📋 Dependencies
 
-- **Valheim** 0.148.7+ (tested version)
-- **BepInEx** 5.4.901+ (denikson-BepInExPack_Valheim)
-- **Harmony** (included with BepInEx)
+- **Valheim** 0.218.15+ (latest tested - should work with older versions)
+- **BepInEx** 5.4.22+ or 6.0+ (denikson-BepInExPack_Valheim)
+- **HarmonyX** 2.10.1+ (included with BepInEx or via NuGet)
 - **Unity Engine** (from Valheim installation)
+
+### What's New in v1.1.0
+
+- ✅ **Updated for latest Valheim and BepInEx**: Compatible with current game versions
+- ✅ **Improved Harmony patching**: More stable and less intrusive approach
+- ✅ **Configurable keybinds**: Customize toggle and modifier keys
+- ✅ **Better error handling**: Comprehensive logging and graceful error recovery
+- ✅ **Modern BepInEx practices**: Updated to use latest BepInEx features
+- ✅ **Enhanced logging**: Better debugging and troubleshooting information
+- ✅ **.NET 4.8.1 target**: Updated from 4.7.2 for better compatibility
 
 ---
 

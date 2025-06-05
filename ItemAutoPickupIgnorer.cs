@@ -4,118 +4,259 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx.Configuration;
+using BepInEx.Logging;
 
 namespace ItemAutoPickupIgnorer
 {
-    [BepInPlugin("stal4gmite.ItemAutoPickupIgnorer", "Item Auto Pickup Ignorer", "1.0.1")]
+    [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
     [BepInProcess("valheim.exe")]
     public class ItemAutoPickupIgnorer : BaseUnityPlugin
     {
-		public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }
+        public const string PluginGUID = "stal4gmite.ItemAutoPickupIgnorer";
+        public const string PluginName = "Item Auto Pickup Ignorer";
+        public const string PluginVersion = "1.1.0";
 
-        private readonly Harmony harmony = new Harmony("stal4gmite.ItemAutoPickupIgnorer");
-		private ConfigEntry<string> items;
-		
-		public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
+        public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }
 
-		public static ItemAutoPickupIgnorerMode Mode = ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT;
+        private readonly Harmony harmony = new Harmony(PluginGUID);
+        private ConfigEntry<string> items;
+        private ConfigEntry<KeyCode> toggleKey;
+        private ConfigEntry<KeyCode> modifierKey;
+        
+        public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
+        public static ItemAutoPickupIgnorerMode Mode = ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT;
+        public static ManualLogSource logger;
 
-		void Awake()
+        void Awake()
         {
-            harmony.PatchAll();
-			items = Config.Bind("Settings",
-								"Items",
-								string.Empty,
-								"List of items. Remove '#' to ignore the item.");
-
-			ItemsToIgnore = items.Value.Split(',').Select(i => i.Trim()).Where(i => !i.StartsWith("#")).Select(i => $"{i}(Clone)");
-		}
-
-		void Update()
-		{
-			if (Input.GetKey(KeyCode.LeftControl))
-			{
-				if (Input.GetKeyDown(KeyCode.L))
-				{
-					switch (Mode)
-					{
-						case ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT:
-							Mode = ItemAutoPickupIgnorerMode.IGNORE_SOME;
-							break;
-						case ItemAutoPickupIgnorerMode.IGNORE_SOME:
-							Mode = ItemAutoPickupIgnorerMode.IGNORE_NONE;
-							break;
-						case ItemAutoPickupIgnorerMode.IGNORE_NONE:
-							Mode = ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT;
-							break;
-					}
-
-					Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"Item Auto Pickup Ignorer: {GetModeDisplayText(Mode)}");
-				}
-			}
-		}
-
-		string GetModeDisplayText(ItemAutoPickupIgnorerMode mode)
-		{
-			string text = string.Empty;
-
-			switch (mode)
-			{
-				case ItemAutoPickupIgnorerMode.IGNORE_SOME:
-					text = "Ignoring Items";
-					break;
-				case ItemAutoPickupIgnorerMode.IGNORE_NONE:
-					text = "Ignoring Nothing";
-					break;
-				case ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT:
-					text = "Normal Valheim Behavior";
-					break;
-				default:
-					text = "Unknown Behavior";
-					break;
-			}
-
-			return text;
-		}
-
-		[HarmonyPatch(typeof(Player), "AutoPickup")]
-        class ItemAutoPickupIgnorerPlayerPatch
-        {
-			static void Prefix(ref float ___m_autoPickupRange, ref int ___m_autoPickupMask, Player __instance)
+            logger = Logger;
+            
+            try
             {
-				if (__instance.IsTeleporting())
-				{
-					return;
-				}
+                harmony.PatchAll();
+                Logger.LogInfo($"{PluginName} {PluginVersion} loaded successfully!");
+                
+                // Configuration
+                items = Config.Bind("Settings",
+                                    "Items",
+                                    string.Empty,
+                                    "List of items. Remove '#' to ignore the item.");
 
-				Vector3 vector = __instance.transform.position + Vector3.up;
+                toggleKey = Config.Bind("Controls",
+                                       "ToggleKey",
+                                       KeyCode.L,
+                                       "Key to toggle pickup modes");
 
-				Collider[] array = Physics.OverlapSphere(vector, ___m_autoPickupRange, ___m_autoPickupMask);
+                modifierKey = Config.Bind("Controls",
+                                         "ModifierKey", 
+                                         KeyCode.LeftControl,
+                                         "Modifier key that must be held while pressing toggle key");
 
-				foreach (Collider collider in array)
-				{
-					if (!collider.attachedRigidbody)
-					{
-						continue;
-					}
+                ItemsToIgnore = items.Value.Split(',')
+                    .Select(i => i.Trim())
+                    .Where(i => !string.IsNullOrEmpty(i) && !i.StartsWith("#"))
+                    .Select(i => $"{i}(Clone)");
+                    
+                Logger.LogInfo($"Configured to ignore {ItemsToIgnore.Count()} item types");
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Error during Awake: {ex}");
+            }
+        }
 
-					ItemDrop component = collider.attachedRigidbody.GetComponent<ItemDrop>();
+        void Update()
+        {
+            try
+            {
+                if (Player.m_localPlayer == null) return;
+                
+                if (Input.GetKey(modifierKey.Value))
+                {
+                    if (Input.GetKeyDown(toggleKey.Value))
+                    {
+                        CycleMode();
+                    }
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Error in Update: {ex}");
+            }
+        }
 
-					if (component == null || __instance.HaveUniqueKey(component.m_itemData.m_shared.m_name) || !component.GetComponent<ZNetView>().IsValid())
-					{
-						continue;
-					}
+        private void CycleMode()
+        {
+            switch (Mode)
+            {
+                case ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT:
+                    Mode = ItemAutoPickupIgnorerMode.IGNORE_SOME;
+                    break;
+                case ItemAutoPickupIgnorerMode.IGNORE_SOME:
+                    Mode = ItemAutoPickupIgnorerMode.IGNORE_NONE;
+                    break;
+                case ItemAutoPickupIgnorerMode.IGNORE_NONE:
+                    Mode = ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT;
+                    break;
+            }
 
-					if (Mode == ItemAutoPickupIgnorerMode.IGNORE_SOME && ItemsToIgnore.Contains(component.name))
-					{
-						component.m_autoPickup = false;
-					}
-					else if (Mode == ItemAutoPickupIgnorerMode.IGNORE_NONE)
-					{
-						component.m_autoPickup = true;
-					}
-				}
-			}
+            string modeText = GetModeDisplayText(Mode);
+            Logger.LogInfo($"Switched to mode: {modeText}");
+            
+            if (Player.m_localPlayer != null)
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"Item Auto Pickup Ignorer: {modeText}");
+            }
+        }
+
+        string GetModeDisplayText(ItemAutoPickupIgnorerMode mode)
+        {
+            return mode switch
+            {
+                ItemAutoPickupIgnorerMode.IGNORE_SOME => "Ignoring Items",
+                ItemAutoPickupIgnorerMode.IGNORE_NONE => "Ignoring Nothing", 
+                ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT => "Normal Valheim Behavior",
+                _ => "Unknown Behavior"
+            };
+        }
+
+        void OnDestroy()
+        {
+            harmony?.UnpatchSelf();
+        }
+
+        [HarmonyPatch(typeof(ItemDrop), "Pickup")]
+        class ItemDropPickupPatch
+        {
+            // Patch the actual pickup method to control behavior
+            static bool Prefix(ItemDrop __instance, Humanoid character)
+            {
+                try
+                {
+                    if (Mode == ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT)
+                        return true; // Let normal behavior happen
+
+                    if (character == null || !(character is Player))
+                        return true; // Only affect players
+
+                    // If we're ignoring some items and this is one of them, don't auto-pickup
+                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_SOME)
+                    {
+                        if (ItemsToIgnore.Contains(__instance.name))
+                        {
+                            // Only block if this is an auto-pickup (not manual)
+                            // We can detect this by checking if the player is close but not actively trying to pickup
+                            Player player = character as Player;
+                            if (player != null && !player.InPlaceMode() && !Input.GetKey(KeyCode.E))
+                            {
+                                return false; // Block auto-pickup
+                            }
+                        }
+                    }
+                    // For IGNORE_NONE mode, always allow pickup
+                    return true;
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in ItemDrop.Pickup patch: {ex}");
+                    return true; // Fallback to normal behavior
+                }
+            }
+        }
+
+        // Alternative approach: Patch the Player.AutoPickup method more carefully
+        [HarmonyPatch(typeof(Player), "AutoPickup")]
+        class PlayerAutoPickupPatch
+        {
+            static bool Prefix(Player __instance, float dt)
+            {
+                try
+                {
+                    if (Mode == ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT)
+                        return true; // Use default Valheim behavior
+
+                    if (__instance == null || __instance.IsTeleporting())
+                        return true;
+
+                    // For IGNORE_NONE mode, force enable all auto pickups in range
+                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_NONE)
+                    {
+                        ForceEnableAutoPickup(__instance);
+                        return true; // Let normal pickup logic continue
+                    }
+
+                    // For IGNORE_SOME mode, disable auto pickup for ignored items
+                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_SOME)
+                    {
+                        DisableIgnoredItemsAutoPickup(__instance);
+                        return true; // Let normal pickup logic continue
+                    }
+
+                    return true;
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in Player.AutoPickup patch: {ex}");
+                    return true; // Fallback to normal behavior
+                }
+            }
+
+            private static void ForceEnableAutoPickup(Player player)
+            {
+                try
+                {
+                    float range = 2f; // Default range
+                    Vector3 position = player.transform.position + Vector3.up;
+                    Collider[] colliders = Physics.OverlapSphere(position, range, LayerMask.GetMask("item"));
+
+                    foreach (Collider collider in colliders)
+                    {
+                        if (collider?.attachedRigidbody == null) continue;
+
+                        ItemDrop itemDrop = collider.attachedRigidbody.GetComponent<ItemDrop>();
+                        if (itemDrop == null) continue;
+
+                        ZNetView netView = itemDrop.GetComponent<ZNetView>();
+                        if (netView == null || !netView.IsValid()) continue;
+
+                        itemDrop.m_autoPickup = true;
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in ForceEnableAutoPickup: {ex}");
+                }
+            }
+
+            private static void DisableIgnoredItemsAutoPickup(Player player)
+            {
+                try
+                {
+                    float range = 2f; // Default range
+                    Vector3 position = player.transform.position + Vector3.up;
+                    Collider[] colliders = Physics.OverlapSphere(position, range, LayerMask.GetMask("item"));
+
+                    foreach (Collider collider in colliders)
+                    {
+                        if (collider?.attachedRigidbody == null) continue;
+
+                        ItemDrop itemDrop = collider.attachedRigidbody.GetComponent<ItemDrop>();
+                        if (itemDrop == null) continue;
+
+                        ZNetView netView = itemDrop.GetComponent<ZNetView>();
+                        if (netView == null || !netView.IsValid()) continue;
+
+                        if (ItemsToIgnore.Contains(itemDrop.name))
+                        {
+                            itemDrop.m_autoPickup = false;
+                        }
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in DisableIgnoredItemsAutoPickup: {ex}");
+                }
+            }
         }
     }
 }

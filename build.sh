@@ -1,21 +1,31 @@
 #!/bin/bash
 
 # Valheim Mod Build Script for macOS
-# This script builds the ItemAutoPickupIgnorer mod
+# This script builds the ItemAutoPickupIgnorer mod v1.1.0
 
-echo "🔨 Building Valheim ItemAutoPickupIgnorer Mod"
-echo "=============================================="
+echo "🔨 Building Valheim ItemAutoPickupIgnorer Mod v1.1.0"
+echo "===================================================="
 
 # Check if required DLLs exist
 LIBS_DIR="./libs"
-REQUIRED_DLLS=("0Harmony.dll" "assembly_valheim.dll" "BepInEx.dll" "UnityEngine.dll" "UnityEngine.CoreModule.dll")
+REQUIRED_DLLS=("assembly_valheim.dll")
+OPTIONAL_DLLS=("0Harmony.dll" "BepInEx.dll" "UnityEngine.dll" "UnityEngine.CoreModule.dll")
 MISSING_DLLS=()
 
 echo "📦 Checking for required DLL files..."
 for dll in "${REQUIRED_DLLS[@]}"; do
     if [ ! -f "$LIBS_DIR/$dll" ]; then
         MISSING_DLLS+=("$dll")
-        echo "❌ Missing: $dll"
+        echo "❌ Missing: $dll (REQUIRED)"
+    else
+        echo "✅ Found: $dll"
+    fi
+done
+
+echo "📦 Checking for optional DLL files (will use NuGet fallbacks)..."
+for dll in "${OPTIONAL_DLLS[@]}"; do
+    if [ ! -f "$LIBS_DIR/$dll" ]; then
+        echo "⚠️  Missing: $dll (will use NuGet package)"
     else
         echo "✅ Found: $dll"
     fi
@@ -29,7 +39,7 @@ if [ ${#MISSING_DLLS[@]} -gt 0 ]; then
     echo ""
     echo "   See libs/README.md for instructions on where to find these files."
     echo ""
-    echo "🔄 Building with fallback Unity assemblies (for syntax checking)..."
+    echo "🔄 Building with NuGet dependencies..."
 else
     echo ""
     echo "✅ All required DLLs found!"
@@ -50,18 +60,24 @@ echo "🔨 Building project..."
 if dotnet build ItemAutoPickupIgnorer.csproj --no-restore --verbosity minimal; then
     echo ""
     echo "🎉 Build completed successfully!"
-    echo "   Output: bin/Debug/net472/ItemAutoPickupIgnorer.dll"
+    echo "   Output: bin/Debug/net481/ItemAutoPickupIgnorer.dll"
     
     if [ ${#MISSING_DLLS[@]} -gt 0 ]; then
         echo ""
-        echo "⚠️  Note: Built with fallback assemblies. The DLL may not work without actual game files."
+        echo "⚠️  Note: Built with some NuGet fallbacks. Ensure you have the actual Valheim game files for full functionality."
     fi
+    
+    echo ""
+    echo "📝 Installation Instructions:"
+    echo "   1. Copy ItemAutoPickupIgnorer.dll to BepInEx/plugins/"
+    echo "   2. Copy stal4gmite.ItemAutoPickupIgnorer.cfg to BepInEx/config/"
+    echo "   3. Launch Valheim and enjoy!"
 else
     echo ""
     echo "❌ Build failed!"
     if [ ${#MISSING_DLLS[@]} -gt 0 ]; then
-        echo "   This is likely due to missing DLL files."
-        echo "   Please add the required DLLs to the libs/ directory."
+        echo "   This is likely due to missing required DLL files."
+        echo "   Please add assembly_valheim.dll to the libs/ directory."
     fi
     exit 1
 fi
