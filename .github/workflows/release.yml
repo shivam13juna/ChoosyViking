@@ -1,0 +1,105 @@
+name: Build and Release ItemAutoPickupIgnorer
+
+on:
+  push:
+    branches:
+      - master # Triggers on pushes to the master branch
+    # tags:
+    #  - 'v*' # Temporarily disabled, will be re-enabled later
+
+jobs:
+  # New job to extract version on Ubuntu
+  extract_version:
+    name: Extract Version
+    runs-on: ubuntu-latest
+    outputs:
+      informational_version: ${{ steps.extract.outputs.informational_version }}
+      assembly_file_version: ${{ steps.extract.outputs.assembly_file_version }}
+      release_tag: ${{ steps.extract.outputs.release_tag }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Extract version
+        id: extract
+        shell: bash
+        run: |
+          version=$(grep 'public const string ModVersion' ItemAutoPickupIgnorer.cs | sed 's/.*"\(.*\)".*/\1/')
+          echo "informational_version=$version" >> $GITHUB_OUTPUT
+          # build assembly file version
+          IFS='.' read -ra parts <<< "$version"
+          last=${parts[-1]%%-*}; parts[-1]=$last
+          while [ ${#parts[@]} -lt 4 ]; do parts+=(0); done
+          assembly_version="${parts[0]}.${parts[1]}.${parts[2]}.${parts[3]}"
+          echo "assembly_file_version=$assembly_version" >> $GITHUB_OUTPUT
+          tag=${version}
+          [[ $tag != v* ]] && tag="v$tag"
+          echo "release_tag=$tag" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build .NET Project
+    needs: extract_version            # Depend on version extraction
+    runs-on: windows-latest
+    permissions:
+      contents: read # To checkout the code
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          # Using .NET SDK 8.x which supports .NET Framework 4.8.1
+          dotnet-version: '8.0.x'
+
+      - name: Prepare Build Libraries (using existing libs folder)
+        shell: bash
+        run: |
+          # Your libs folder already contains the necessary DLLs
+          echo "Using existing libs folder at ${GITHUB_WORKSPACE}/libs"
+          ls -la "${GITHUB_WORKSPACE}/libs"
+
+      - name: Restore dependencies
+        run: dotnet restore ItemAutoPickupIgnorer.sln
+        shell: bash
+
+      - name: Build project
+        run: |
+          dotnet build ItemAutoPickupIgnorer.sln --configuration Release --no-restore \
+            -p:Version=${{ needs.extract_version.outputs.informational_version }} \
+            -p:AssemblyVersion=${{ needs.extract_version.outputs.assembly_file_version }} \
+            -p:FileVersion=${{ needs.extract_version.outputs.assembly_file_version }}
+        shell: bash
+
+      - name: Upload DLL artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ItemAutoPickupIgnorer-dll
+          # Path to the DLL. Based on your structure, it's under net481 for Release.
+          path: '${{ github.workspace }}/bin/Release/net481/ItemAutoPickupIgnorer.dll'
+
+  create_release:
+    name: Create GitHub Release
+    needs: [extract_version, build]   # Use outputs from extract_version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download DLL artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ItemAutoPickupIgnorer-dll
+          path: artifacts
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.extract_version.outputs.release_tag }}
+          name: ${{ format('Release {0}', needs.extract_version.outputs.release_tag) }}
+          body: |
+            Automated release for version ${{ needs.extract_version.outputs.informational_version }}.
+          draft: false
+          # Mark as pre-release if the informational_version (extracted from file) contains a hyphen
+          prerelease: ${{ contains(needs.extract_version.outputs.informational_version, '-') }}
+          files: |
+            artifacts/ItemAutoPickupIgnorer.dll

@@ -8,13 +8,13 @@ using BepInEx.Logging;
 
 namespace ItemAutoPickupIgnorer
 {
-    [BepInPlugin(PluginGUID, PluginName, PluginVersion)]
+    [BepInPlugin(PluginGUID, PluginName, ModVersion)]
     [BepInProcess("valheim.exe")]
     public class ItemAutoPickupIgnorer : BaseUnityPlugin
     {
         public const string PluginGUID = "stal4gmite.ItemAutoPickupIgnorer";
         public const string PluginName = "Item Auto Pickup Ignorer";
-        public const string PluginVersion = "1.1.0";
+        public const string ModVersion = "1.1.0";
 
         public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }
 
@@ -34,7 +34,7 @@ namespace ItemAutoPickupIgnorer
             try
             {
                 harmony.PatchAll();
-                Logger.LogInfo($"{PluginName} {PluginVersion} loaded successfully!");
+                Logger.LogInfo($"{PluginName} {ModVersion} loaded successfully!");
                 
                 // Configuration
                 items = Config.Bind("Settings",
