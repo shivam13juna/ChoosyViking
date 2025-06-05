@@ -14,3 +14,6 @@ libs/*.dll
 
 # Keep build scripts
 !build.sh
+
+get_items.ipynb
+Item list.xlsx
