@@ -61,10 +61,14 @@ jobs:
           ls -la "${GITHUB_WORKSPACE}/libs"
 
       - name: Restore dependencies
+        env:
+          CI: true
         run: dotnet restore ItemAutoPickupIgnorer.sln
         shell: bash
 
       - name: Build project
+        env:
+          CI: true
         run: |
           dotnet build ItemAutoPickupIgnorer.sln --configuration Release --no-restore \
             -p:Version=${{ needs.extract_version.outputs.informational_version }} \

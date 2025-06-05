@@ -36,10 +36,10 @@
 
   <!-- References to local DLL files with modern BepInEx -->
   <ItemGroup>
-    <!-- Prefer NuGet packages when available for better compatibility -->
-    <PackageReference Include="BepInEx.Core" Version="5.4.22" PrivateAssets="all" Condition="!Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
-    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.1.0" PrivateAssets="all" />
-    <PackageReference Include="HarmonyX" Version="2.10.1" PrivateAssets="all" Condition="!Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
+    <!-- Only use NuGet packages when not in CI and local DLLs don't exist -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" Condition="'$(CI)' != 'true' AND !Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.0.0" PrivateAssets="all" Condition="'$(CI)' != 'true'" />
+    <PackageReference Include="HarmonyX" Version="2.10.1" PrivateAssets="all" Condition="'$(CI)' != 'true' AND !Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
     
     <!-- Local DLL references with fallback -->
     <Reference Include="0Harmony" HintPath="$(MSBuildProjectDirectory)\libs\0Harmony.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
@@ -52,9 +52,9 @@
     <Reference Include="UnityEngine.UI" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll')" />
   </ItemGroup>
 
-  <!-- Fallback to available Unity assemblies if local DLLs aren't available -->
-  <ItemGroup Condition="!Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')">
-    <PackageReference Include="Unity3D.UnityEngine" Version="2018.2.14" PrivateAssets="all" />
+  <!-- Fallback to available Unity assemblies if local DLLs aren't available (only when not in CI) -->
+  <ItemGroup Condition="'$(CI)' != 'true' AND (!Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll'))">
+    <PackageReference Include="Unity3D.UnityEngine" Version="2018.2.21" PrivateAssets="all" />
   </ItemGroup>
 
   <!-- Enable .NET Framework reference assemblies for cross-platform building -->
