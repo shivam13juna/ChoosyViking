@@ -36,23 +36,35 @@
 
   <!-- References to local DLL files with modern BepInEx -->
   <ItemGroup>
-    <!-- Only use NuGet packages when not in CI and local DLLs don't exist -->
+    <!-- Use NuGet packages in CI environment -->
+    <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" Condition="'$(CI)' == 'true'" />
+    <PackageReference Include="BepInEx.PluginInfoProps" Version="2.0.0" PrivateAssets="all" Condition="'$(CI)' == 'true'" />
+    <PackageReference Include="HarmonyX" Version="2.10.1" PrivateAssets="all" Condition="'$(CI)' == 'true'" />
+    
+    <!-- Use NuGet packages locally when DLLs don't exist -->
     <PackageReference Include="BepInEx.Core" Version="5.4.21" PrivateAssets="all" Condition="'$(CI)' != 'true' AND !Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.0.0" PrivateAssets="all" Condition="'$(CI)' != 'true'" />
     <PackageReference Include="HarmonyX" Version="2.10.1" PrivateAssets="all" Condition="'$(CI)' != 'true' AND !Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
     
-    <!-- Local DLL references with fallback -->
-    <Reference Include="0Harmony" HintPath="$(MSBuildProjectDirectory)\libs\0Harmony.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
+    <!-- Local DLL references when not in CI -->
+    <Reference Include="0Harmony" HintPath="$(MSBuildProjectDirectory)\libs\0Harmony.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\0Harmony.dll')" />
+    <!-- assembly_valheim.dll is needed in both CI and local, as it's not available via NuGet -->
     <Reference Include="assembly_valheim" HintPath="$(MSBuildProjectDirectory)\libs\assembly_valheim.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\assembly_valheim.dll')" />
-    <Reference Include="BepInEx" HintPath="$(MSBuildProjectDirectory)\libs\BepInEx.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
-    <Reference Include="UnityEngine" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll')" />
-    <Reference Include="UnityEngine.CoreModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll')" />
-    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll')" />
-    <Reference Include="UnityEngine.PhysicsModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')" />
+    <Reference Include="BepInEx" HintPath="$(MSBuildProjectDirectory)\libs\BepInEx.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\BepInEx.dll')" />
+    <!-- Unity DLLs only when NOT in CI to avoid conflicts with NuGet packages -->
+    <Reference Include="UnityEngine" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll')" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.CoreModule.dll')" />
+    <Reference Include="UnityEngine.InputLegacyModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll')" />
+    <Reference Include="UnityEngine.PhysicsModule" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll" Private="false" Condition="'$(CI)' != 'true' AND Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll')" />
     <Reference Include="UnityEngine.UI" HintPath="$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll" Private="false" Condition="Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.UI.dll')" />
   </ItemGroup>
 
-  <!-- Fallback to available Unity assemblies if local DLLs aren't available (only when not in CI) -->
+  <!-- Unity assemblies for CI or when local DLLs aren't available -->
+  <ItemGroup Condition="'$(CI)' == 'true'">
+    <PackageReference Include="UnityEngine.Modules" Version="2018.4.36" PrivateAssets="all" />
+  </ItemGroup>
+  
+  <!-- Unity assemblies for local development when DLLs don't exist -->  
   <ItemGroup Condition="'$(CI)' != 'true' AND (!Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.InputLegacyModule.dll') OR !Exists('$(MSBuildProjectDirectory)\libs\UnityEngine.PhysicsModule.dll'))">
     <PackageReference Include="Unity3D.UnityEngine" Version="2018.2.21" PrivateAssets="all" />
   </ItemGroup>
