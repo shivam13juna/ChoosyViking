@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Valheim Mod Build Script for macOS
-# This script builds the ChoosyViking mod v1.1.0
+# This script builds the ChoosyViking mod v2.0.0
 
-echo "🔨 Building Valheim ChoosyViking Mod v1.1.0"
+echo "🔨 Building Valheim ChoosyViking Mod v2.0.0"
 echo "===================================================="
 
 # Check if required DLLs exist

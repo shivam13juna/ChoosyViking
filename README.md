@@ -4,7 +4,7 @@
 
 A Valheim BepInEx plugin that allows users to disable auto pickup of specific items.
 
-**Version:** 1.1.0  
+**Version:** 2.0.0  
 **Target:** .NET Framework 4.8.1  
 **Compatibility:** Cross-platform building (Windows/macOS/Linux)  
 **BepInEx Version:** 5.4.22+ (Compatible with BepInEx 6.0+)  
@@ -17,10 +17,11 @@ A Valheim BepInEx plugin that allows users to disable auto pickup of specific it
 This plugin provides fine-grained control over Valheim's auto-pickup system:
 
 - **3 modes**: Normal Valheim behavior, ignore specific items, or ignore nothing
-- **Configurable item list**: Easily customize which items to ignore
+- **Interactive item management**: Click items in inventory + press `I` to add/remove from ignore list
+- **No config file editing**: Manage ignore list entirely in-game
 - **Configurable controls**: Customize toggle and modifier keys
 - **In-game controls**: Press `Left Ctrl + L` to cycle through modes (configurable)
-- **Real-time feedback**: On-screen messages show current mode
+- **Real-time feedback**: On-screen messages show current mode and item changes
 - **Improved compatibility**: Updated for latest Valheim and BepInEx versions
 - **Better error handling**: Comprehensive logging and error recovery
 
@@ -84,6 +85,14 @@ Place these files in the `libs/` directory:
 
 ### Configuration
 
+**NEW in v2.0:** You can now manage your ignore list entirely in-game!
+
+#### **Interactive Method (Recommended):**
+1. **Add items**: Click item in inventory → Press `I`
+2. **Remove items**: Click item in inventory → Press `Shift + I`
+3. **No file editing needed!**
+
+#### **Manual Configuration (Optional):**
 Edit `shivam13juna.ChoosyViking.cfg`:
 
 ```ini
@@ -97,6 +106,8 @@ Items = #Amber,#Stone,#Wood,#Coal,#Resin,...
   - **Normal Valheim Behavior**: Default game auto-pickup
   - **Ignoring Items**: Skip configured items
   - **Ignoring Nothing**: Force pickup everything
+- **I**: Add selected inventory item to ignore list (NEW!)
+- **Shift + I**: Remove selected inventory item from ignore list (NEW!)
 
 ---
 
@@ -121,7 +132,7 @@ ChoosyViking/
 
 ## 🔧 Technical Details
 
-- **Target Framework**: .NET Framework 4.7.2
+- **Target Framework**: .NET Framework 4.8.1
 - **Build System**: Modern SDK-style project with cross-platform support
 - **Dependencies**: BepInEx 5.x, Harmony, Unity Engine, Valheim assemblies
 - **Architecture**: Harmony patches on Player.AutoPickup method

@@ -11,41 +11,33 @@ namespace ChoosyViking
 {
     [BepInPlugin(PluginGUID, PluginName, ModVersion)]
     [BepInProcess("valheim.exe")]
-    public class ChoosyViking : BaseUnityPlugin
-    {
-<<<<<<< Updated upstream:ItemAutoPickupIgnorer.cs
-        public const string PluginGUID = "stal4gmite.ItemAutoPickupIgnorer";
-        public const string PluginName = "Item Auto Pickup Ignorer";
-        public const string ModVersion = "1.1.1";
-
-        public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }        private readonly Harmony harmony = new Harmony(PluginGUID);
-=======
+    public class ChoosyViking : BaseUnityPlugin        {
         public const string PluginGUID = "shivam13juna.ChoosyViking";
         public const string PluginName = "Choosy Viking";
-        public const string ModVersion = "1.1.0";
+        public const string ModVersion = "2.0.0";
 
         public enum ChoosyVikingMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }
 
         private readonly Harmony harmony = new Harmony(PluginGUID);
->>>>>>> Stashed changes:ChoosyViking.cs
         private ConfigEntry<string> items;
         private ConfigEntry<KeyCode> toggleKey;
         private ConfigEntry<KeyCode> modifierKey;
+        private ConfigEntry<KeyCode> addItemKey;
+        private ConfigEntry<KeyCode> removeItemKey;
         
-<<<<<<< Updated upstream:ItemAutoPickupIgnorer.cs
         // Input system fallback
         private static System.Type inputType;
         private static MethodInfo getKeyMethod;
         private static MethodInfo getKeyDownMethod;
         private static bool inputSystemAvailable = false;
-          public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
-        public static ItemAutoPickupIgnorerMode Mode = ItemAutoPickupIgnorerMode.IGNORE_SOME;
-=======
+        
+        // Selected item tracking
+        public static ItemDrop.ItemData selectedItem = null;
+        
         public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
         public static ChoosyVikingMode Mode = ChoosyVikingMode.VALHEIM_DEFAULT;
->>>>>>> Stashed changes:ChoosyViking.cs
         public static ManualLogSource logger;
-        public static ItemAutoPickupIgnorer Instance;        void Awake()
+        public static ChoosyViking Instance;        void Awake()
         {
             Instance = this;
             logger = Logger;
@@ -54,7 +46,8 @@ namespace ChoosyViking
             {
                 // Initialize input system
                 InitializeInputSystem();
-                  harmony.PatchAll();
+                
+                harmony.PatchAll();
                 Logger.LogInfo($"{PluginName} {ModVersion} loaded successfully!");
                 Logger.LogInfo($"Starting in mode: {GetModeDisplayText(Mode)}");                // Configuration
                 items = Config.Bind("Settings",
@@ -72,6 +65,16 @@ namespace ChoosyViking
                                          KeyCode.LeftControl,
                                          "Modifier key that must be held while pressing toggle key");
 
+                addItemKey = Config.Bind("Controls",
+                                        "AddItemKey",
+                                        KeyCode.I,
+                                        "Key to add selected item to ignore list");
+
+                removeItemKey = Config.Bind("Controls",
+                                           "RemoveItemKey",
+                                           KeyCode.I,
+                                           "Key to remove selected item from ignore list (use with Shift)");
+
                 ItemsToIgnore = items.Value.Split(',')
                     .Select(i => i.Trim())
                     .Where(i => !string.IsNullOrEmpty(i) && !i.StartsWith("#"))
@@ -81,7 +84,8 @@ namespace ChoosyViking
             }
             catch (System.Exception ex)
             {
-                Logger.LogError($"Error during Awake: {ex}");            }
+                Logger.LogError($"Error during Awake: {ex}");
+            }
         }        private string GetDefaultItemList()
         {
             // Comprehensive list of all Valheim items that players might want to ignore
@@ -182,12 +186,25 @@ namespace ChoosyViking
                 if (Player.m_localPlayer == null) return;
                 if (!inputSystemAvailable) return;
                 
+                // Toggle mode: Ctrl + L
                 if (SafeGetKey(modifierKey.Value))
                 {
                     if (SafeGetKeyDown(toggleKey.Value))
                     {
                         CycleMode();
                     }
+                }
+                
+                // Add item to ignore list: I
+                if (SafeGetKeyDown(addItemKey.Value) && !SafeGetKey(KeyCode.LeftShift) && !SafeGetKey(KeyCode.RightShift))
+                {
+                    AddSelectedItemToIgnoreList();
+                }
+                
+                // Remove item from ignore list: Shift + I
+                if (SafeGetKeyDown(removeItemKey.Value) && (SafeGetKey(KeyCode.LeftShift) || SafeGetKey(KeyCode.RightShift)))
+                {
+                    RemoveSelectedItemFromIgnoreList();
                 }
             }
             catch (System.Exception ex)
@@ -254,7 +271,8 @@ namespace ChoosyViking
                     if (Mode == ChoosyVikingMode.IGNORE_SOME)
                     {
                         if (ItemsToIgnore.Contains(__instance.name))
-                        {                            // Only block if this is an auto-pickup (not manual)
+                        {
+                            // Only block if this is an auto-pickup (not manual)
                             // We can detect this by checking if the player is close but not actively trying to pickup
                             Player player = character as Player;
                             if (player != null && !player.InPlaceMode() && (Instance == null || !Instance.SafeGetKey(KeyCode.E)))
@@ -366,6 +384,199 @@ namespace ChoosyViking
                 {
                     logger?.LogError($"Error in DisableIgnoredItemsAutoPickup: {ex}");
                 }
+            }
+        }
+
+        // Harmony patch to track selected items in inventory
+        [HarmonyPatch(typeof(InventoryGui), "OnSelectedItem")]
+        class InventorySelectionPatch
+        {
+            static void Postfix(InventoryGui __instance, InventoryGrid grid, ItemDrop.ItemData item)
+            {
+                try
+                {
+                    // Store the selected item
+                    selectedItem = item;
+                    
+                    if (item != null && logger != null)
+                    {
+                        logger.LogDebug($"Selected item: {item.m_shared.m_name}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in inventory selection patch: {ex}");
+                }
+            }
+        }
+
+        // Fallback patch for item interaction
+        [HarmonyPatch(typeof(Player), "UseItem")]
+        class PlayerUseItemPatch
+        {
+            static void Prefix(Player __instance, Inventory inventory, ItemDrop.ItemData item, bool fromInventoryGui)
+            {
+                try
+                {
+                    if (fromInventoryGui && item != null)
+                    {
+                        // When player interacts with item from inventory, track it as selected
+                        selectedItem = item;
+                        logger?.LogDebug($"Player used item from inventory: {item.m_shared.m_name}");
+                    }
+                }
+                catch (System.Exception ex)
+                {
+                    logger?.LogError($"Error in player use item patch: {ex}");
+                }
+            }
+        }
+
+        private void AddSelectedItemToIgnoreList()
+        {
+            try
+            {
+                if (selectedItem == null)
+                {
+                    if (Player.m_localPlayer != null)
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No item selected. Click on an item in your inventory first.");
+                    }
+                    return;
+                }
+
+                string itemName = selectedItem.m_shared.m_name;
+                string itemWithClone = $"{itemName}(Clone)";
+
+                // Check if already in ignore list
+                if (ItemsToIgnore.Contains(itemWithClone))
+                {
+                    if (Player.m_localPlayer != null)
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{itemName} is already in ignore list");
+                    }
+                    return;
+                }
+
+                // Add to current runtime list
+                var currentItems = ItemsToIgnore.ToList();
+                currentItems.Add(itemWithClone);
+                ItemsToIgnore = currentItems;
+
+                // Update config and save
+                UpdateConfigFromIgnoreList();
+
+                if (Player.m_localPlayer != null)
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"✓ {itemName} added to ignore list");
+                }
+
+                Logger.LogInfo($"Added {itemName} to ignore list");
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Error adding item to ignore list: {ex}");
+            }
+        }
+
+        private void RemoveSelectedItemFromIgnoreList()
+        {
+            try
+            {
+                if (selectedItem == null)
+                {
+                    if (Player.m_localPlayer != null)
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, "No item selected. Click on an item in your inventory first.");
+                    }
+                    return;
+                }
+
+                string itemName = selectedItem.m_shared.m_name;
+                string itemWithClone = $"{itemName}(Clone)";
+
+                // Check if in ignore list
+                if (!ItemsToIgnore.Contains(itemWithClone))
+                {
+                    if (Player.m_localPlayer != null)
+                    {
+                        Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"{itemName} is not in ignore list");
+                    }
+                    return;
+                }
+
+                // Remove from current runtime list
+                var currentItems = ItemsToIgnore.ToList();
+                currentItems.Remove(itemWithClone);
+                ItemsToIgnore = currentItems;
+
+                // Update config and save
+                UpdateConfigFromIgnoreList();
+
+                if (Player.m_localPlayer != null)
+                {
+                    Player.m_localPlayer.Message(MessageHud.MessageType.Center, $"✗ {itemName} removed from ignore list");
+                }
+
+                Logger.LogInfo($"Removed {itemName} from ignore list");
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Error removing item from ignore list: {ex}");
+            }
+        }
+
+        private void UpdateConfigFromIgnoreList()
+        {
+            try
+            {
+                // Convert back to config format (without (Clone) and with # prefix)
+                var configItems = ItemsToIgnore
+                    .Select(item => item.Replace("(Clone)", ""))
+                    .Select(item => $"#{item}");
+
+                // Get items that were manually added (not in default list)
+                var defaultItems = GetDefaultItemList().Split(',')
+                    .Select(i => i.Trim())
+                    .Where(i => !string.IsNullOrEmpty(i));
+
+                // Combine: default items stay commented, manually added items are uncommented
+                var allConfigItems = new List<string>();
+                
+                // Add default items (keep them commented)
+                foreach (var defaultItem in defaultItems)
+                {
+                    allConfigItems.Add(defaultItem.StartsWith("#") ? defaultItem : $"#{defaultItem}");
+                }
+                
+                // Add manually added items (uncommented)
+                foreach (var ignoredItem in ItemsToIgnore)
+                {
+                    string itemWithoutClone = ignoredItem.Replace("(Clone)", "");
+                    if (!defaultItems.Any(d => d.Replace("#", "").Trim() == itemWithoutClone))
+                    {
+                        allConfigItems.Add(itemWithoutClone);
+                    }
+                    else
+                    {
+                        // Update default item to be uncommented
+                        for (int i = 0; i < allConfigItems.Count; i++)
+                        {
+                            if (allConfigItems[i].Replace("#", "").Trim() == itemWithoutClone)
+                            {
+                                allConfigItems[i] = itemWithoutClone;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                items.Value = string.Join(",", allConfigItems);
+                Config.Save();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.LogError($"Error updating config: {ex}");
             }
         }
     }

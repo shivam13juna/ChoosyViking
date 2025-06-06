@@ -1,5 +1,62 @@
 # Changelog
 
+## Version 2.0.0 - Interactive Item Management
+
+### 🎯 **Major New Features**
+
+#### ✅ **Click-to-Select Item Management**
+- **Interactive Item Addition**: Click on any item in your inventory, then press `I` to add it to the ignore list
+- **Interactive Item Removal**: Click on any item in your inventory, then press `Shift + I` to remove it from the ignore list
+- **Real-time Feedback**: Instant confirmation messages when items are added or removed
+- **Persistent Settings**: Items added/removed are immediately saved to configuration
+
+#### 🎮 **Improved User Experience**
+- **No More Config File Editing**: Add and remove items directly in-game
+- **Visual Confirmation**: Clear messages show when items are added/removed
+- **Error Prevention**: Smart validation prevents duplicate additions
+- **Ergonomic Controls**: Simple click + key press interaction
+
+#### ⚙️ **Enhanced Configuration**
+```ini
+[Controls]
+ToggleKey = L              # Ctrl+L: cycle pickup modes (unchanged)
+ModifierKey = LeftControl  # Ctrl modifier (unchanged)
+AddItemKey = I             # I: add selected item to ignore list (NEW)
+RemoveItemKey = I          # Shift+I: remove selected item from ignore list (NEW)
+```
+
+### 🚀 **How to Use New Features**
+
+#### **Adding Items to Ignore List:**
+1. Open your inventory (`Tab`)
+2. Click on any item you want to ignore
+3. Press `I` key
+4. See confirmation: "✓ [ItemName] added to ignore list"
+
+#### **Removing Items from Ignore List:**
+1. Open your inventory (`Tab`)  
+2. Click on any item you want to stop ignoring
+3. Press `Shift + I`
+4. See confirmation: "✗ [ItemName] removed from ignore list"
+
+#### **Existing Features Still Work:**
+- `Ctrl + L`: Cycle through pickup modes (Normal/Ignore Some/Ignore Nothing)
+- Manual config file editing (if preferred)
+
+### 🔧 **Technical Improvements**
+- **Smart Config Updates**: Automatically manages configuration file
+- **Harmony Patches**: Added inventory interaction tracking
+- **Error Handling**: Comprehensive error checking and user feedback
+- **Backward Compatibility**: Existing configurations work unchanged
+
+### 📋 **Migration from v1.x**
+- **Automatic**: No manual migration needed
+- **Config Preserved**: Existing ignore lists remain intact
+- **New Controls**: Additional keybinds added automatically
+- **Full Compatibility**: All v1.x features continue to work
+
+---
+
 ## Version 1.1.0 - Latest Valheim & BepInEx Compatibility Update + Rebranding
 
 ### 🎯 **Rebranding**
