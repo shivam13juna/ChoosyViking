@@ -1,4 +1,4 @@
-name: Build and Release ItemAutoPickupIgnorer
+name: Build and Release ChoosyViking
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
         id: extract
         shell: bash
         run: |
-          version=$(grep 'public const string ModVersion' ItemAutoPickupIgnorer.cs | sed 's/.*"\(.*\)".*/\1/')
+          version=$(grep 'public const string ModVersion' ChoosyViking.cs | sed 's/.*"\(.*\)".*/\1/')
           echo "informational_version=$version" >> $GITHUB_OUTPUT
           # build assembly file version
           IFS='.' read -ra parts <<< "$version"
@@ -63,14 +63,14 @@ jobs:
       - name: Restore dependencies
         env:
           CI: true
-        run: dotnet restore ItemAutoPickupIgnorer.sln
+        run: dotnet restore ChoosyViking.sln
         shell: bash
 
       - name: Build project
         env:
           CI: true
         run: |
-          dotnet build ItemAutoPickupIgnorer.sln --configuration Release --no-restore \
+          dotnet build ChoosyViking.sln --configuration Release --no-restore \
             -p:Version=${{ needs.extract_version.outputs.informational_version }} \
             -p:AssemblyVersion=${{ needs.extract_version.outputs.assembly_file_version }} \
             -p:FileVersion=${{ needs.extract_version.outputs.assembly_file_version }}
@@ -79,9 +79,9 @@ jobs:
       - name: Upload DLL artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ItemAutoPickupIgnorer-dll
+          name: ChoosyViking-dll
           # Path to the DLL. Based on your structure, it's under net481 for Release.
-          path: '${{ github.workspace }}/bin/Release/net481/ItemAutoPickupIgnorer.dll'
+          path: '${{ github.workspace }}/bin/Release/net481/ChoosyViking.dll'
 
   create_release:
     name: Create GitHub Release
@@ -93,7 +93,7 @@ jobs:
       - name: Download DLL artifact
         uses: actions/download-artifact@v4
         with:
-          name: ItemAutoPickupIgnorer-dll
+          name: ChoosyViking-dll
           path: artifacts
 
       - name: Create GitHub Release
@@ -107,4 +107,4 @@ jobs:
           # Mark as pre-release if the informational_version (extracted from file) contains a hyphen
           prerelease: ${{ contains(needs.extract_version.outputs.informational_version, '-') }}
           files: |
-            artifacts/ItemAutoPickupIgnorer.dll
+            artifacts/ChoosyViking.dll

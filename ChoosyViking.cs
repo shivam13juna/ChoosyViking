@@ -7,21 +7,32 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using System.Reflection;
 
-namespace ItemAutoPickupIgnorer
+namespace ChoosyViking
 {
     [BepInPlugin(PluginGUID, PluginName, ModVersion)]
     [BepInProcess("valheim.exe")]
-    public class ItemAutoPickupIgnorer : BaseUnityPlugin
+    public class ChoosyViking : BaseUnityPlugin
     {
+<<<<<<< Updated upstream:ItemAutoPickupIgnorer.cs
         public const string PluginGUID = "stal4gmite.ItemAutoPickupIgnorer";
         public const string PluginName = "Item Auto Pickup Ignorer";
         public const string ModVersion = "1.1.1";
 
         public enum ItemAutoPickupIgnorerMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }        private readonly Harmony harmony = new Harmony(PluginGUID);
+=======
+        public const string PluginGUID = "shivam13juna.ChoosyViking";
+        public const string PluginName = "Choosy Viking";
+        public const string ModVersion = "1.1.0";
+
+        public enum ChoosyVikingMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }
+
+        private readonly Harmony harmony = new Harmony(PluginGUID);
+>>>>>>> Stashed changes:ChoosyViking.cs
         private ConfigEntry<string> items;
         private ConfigEntry<KeyCode> toggleKey;
         private ConfigEntry<KeyCode> modifierKey;
         
+<<<<<<< Updated upstream:ItemAutoPickupIgnorer.cs
         // Input system fallback
         private static System.Type inputType;
         private static MethodInfo getKeyMethod;
@@ -29,6 +40,10 @@ namespace ItemAutoPickupIgnorer
         private static bool inputSystemAvailable = false;
           public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
         public static ItemAutoPickupIgnorerMode Mode = ItemAutoPickupIgnorerMode.IGNORE_SOME;
+=======
+        public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
+        public static ChoosyVikingMode Mode = ChoosyVikingMode.VALHEIM_DEFAULT;
+>>>>>>> Stashed changes:ChoosyViking.cs
         public static ManualLogSource logger;
         public static ItemAutoPickupIgnorer Instance;        void Awake()
         {
@@ -185,14 +200,14 @@ namespace ItemAutoPickupIgnorer
         {
             switch (Mode)
             {
-                case ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT:
-                    Mode = ItemAutoPickupIgnorerMode.IGNORE_SOME;
+                case ChoosyVikingMode.VALHEIM_DEFAULT:
+                    Mode = ChoosyVikingMode.IGNORE_SOME;
                     break;
-                case ItemAutoPickupIgnorerMode.IGNORE_SOME:
-                    Mode = ItemAutoPickupIgnorerMode.IGNORE_NONE;
+                case ChoosyVikingMode.IGNORE_SOME:
+                    Mode = ChoosyVikingMode.IGNORE_NONE;
                     break;
-                case ItemAutoPickupIgnorerMode.IGNORE_NONE:
-                    Mode = ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT;
+                case ChoosyVikingMode.IGNORE_NONE:
+                    Mode = ChoosyVikingMode.VALHEIM_DEFAULT;
                     break;
             }
 
@@ -205,13 +220,13 @@ namespace ItemAutoPickupIgnorer
             }
         }
 
-        string GetModeDisplayText(ItemAutoPickupIgnorerMode mode)
+        string GetModeDisplayText(ChoosyVikingMode mode)
         {
             return mode switch
             {
-                ItemAutoPickupIgnorerMode.IGNORE_SOME => "Ignoring Items",
-                ItemAutoPickupIgnorerMode.IGNORE_NONE => "Ignoring Nothing", 
-                ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT => "Normal Valheim Behavior",
+                ChoosyVikingMode.IGNORE_SOME => "Ignoring Items",
+                ChoosyVikingMode.IGNORE_NONE => "Ignoring Nothing", 
+                ChoosyVikingMode.VALHEIM_DEFAULT => "Normal Valheim Behavior",
                 _ => "Unknown Behavior"
             };
         }
@@ -229,14 +244,14 @@ namespace ItemAutoPickupIgnorer
             {
                 try
                 {
-                    if (Mode == ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT)
+                    if (Mode == ChoosyVikingMode.VALHEIM_DEFAULT)
                         return true; // Let normal behavior happen
 
                     if (character == null || !(character is Player))
                         return true; // Only affect players
 
                     // If we're ignoring some items and this is one of them, don't auto-pickup
-                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_SOME)
+                    if (Mode == ChoosyVikingMode.IGNORE_SOME)
                     {
                         if (ItemsToIgnore.Contains(__instance.name))
                         {                            // Only block if this is an auto-pickup (not manual)
@@ -267,21 +282,21 @@ namespace ItemAutoPickupIgnorer
             {
                 try
                 {
-                    if (Mode == ItemAutoPickupIgnorerMode.VALHEIM_DEFAULT)
+                    if (Mode == ChoosyVikingMode.VALHEIM_DEFAULT)
                         return true; // Use default Valheim behavior
 
                     if (__instance == null || __instance.IsTeleporting())
                         return true;
 
                     // For IGNORE_NONE mode, force enable all auto pickups in range
-                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_NONE)
+                    if (Mode == ChoosyVikingMode.IGNORE_NONE)
                     {
                         ForceEnableAutoPickup(__instance);
                         return true; // Let normal pickup logic continue
                     }
 
                     // For IGNORE_SOME mode, disable auto pickup for ignored items
-                    if (Mode == ItemAutoPickupIgnorerMode.IGNORE_SOME)
+                    if (Mode == ChoosyVikingMode.IGNORE_SOME)
                     {
                         DisableIgnoredItemsAutoPickup(__instance);
                         return true; // Let normal pickup logic continue

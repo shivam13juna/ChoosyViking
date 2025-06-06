@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Valheim Mod Build Script for macOS
-# This script builds the ItemAutoPickupIgnorer mod v1.1.0
+# This script builds the ChoosyViking mod v1.1.0
 
-echo "🔨 Building Valheim ItemAutoPickupIgnorer Mod v1.1.0"
+echo "🔨 Building Valheim ChoosyViking Mod v1.1.0"
 echo "===================================================="
 
 # Check if required DLLs exist
@@ -49,18 +49,18 @@ fi
 
 # Clean previous build
 echo "🧹 Cleaning previous build artifacts..."
-dotnet clean ItemAutoPickupIgnorer.csproj --nologo --verbosity quiet
+dotnet clean ChoosyViking.csproj --nologo --verbosity quiet
 
 # Restore packages
 echo "📦 Restoring NuGet packages..."
-dotnet restore ItemAutoPickupIgnorer.csproj --nologo --verbosity quiet
+dotnet restore ChoosyViking.csproj --nologo --verbosity quiet
 
 # Build the project
 echo "🔨 Building project..."
-if dotnet build ItemAutoPickupIgnorer.csproj --no-restore --verbosity minimal; then
+if dotnet build ChoosyViking.csproj --no-restore --verbosity minimal; then
     echo ""
     echo "🎉 Build completed successfully!"
-    echo "   Output: bin/Debug/net481/ItemAutoPickupIgnorer.dll"
+    echo "   Output: bin/Debug/net481/ChoosyViking.dll"
     
     if [ ${#MISSING_DLLS[@]} -gt 0 ]; then
         echo ""
@@ -69,8 +69,8 @@ if dotnet build ItemAutoPickupIgnorer.csproj --no-restore --verbosity minimal; t
     
     echo ""
     echo "📝 Installation Instructions:"
-    echo "   1. Copy ItemAutoPickupIgnorer.dll to BepInEx/plugins/"
-    echo "   2. Copy stal4gmite.ItemAutoPickupIgnorer.cfg to BepInEx/config/"
+    echo "   1. Copy ChoosyViking.dll to BepInEx/plugins/"
+    echo "   2. Copy shivam13juna.ChoosyViking.cfg to BepInEx/config/"
     echo "   3. Launch Valheim and enjoy!"
 else
     echo ""

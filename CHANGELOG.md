@@ -1,6 +1,12 @@
 # Changelog
 
-## Version 1.1.0 - Latest Valheim & BepInEx Compatibility Update
+## Version 1.1.0 - Latest Valheim & BepInEx Compatibility Update + Rebranding
+
+### 🎯 **Rebranding**
+- **New Name**: "Choosy Viking" (formerly "Item Auto Pickup Ignorer")
+- **New Author**: shivam13juna (originally by stal4gmite)
+- **New Plugin GUID**: shivam13juna.ChoosyViking
+- **New Config File**: shivam13juna.ChoosyViking.cfg
 
 ### 🚀 Major Improvements
 

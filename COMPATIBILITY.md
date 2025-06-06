@@ -76,7 +76,7 @@
 1. **Backup Current Setup**
    ```bash
    # Backup your current config
-   cp BepInEx/config/stal4gmite.ItemAutoPickupIgnorer.cfg ~/backup_config.cfg
+   cp BepInEx/config/shivam13juna.ChoosyViking.cfg ~/backup_config.cfg
    ```
 
 2. **Update BepInEx** (if needed)
@@ -86,11 +86,11 @@
 3. **Install New Mod Version**
    ```bash
    # Remove old version
-   rm BepInEx/plugins/ItemAutoPickupIgnorer.dll
+   rm BepInEx/plugins/ChoosyViking.dll
    
    # Install new version
-   cp ItemAutoPickupIgnorer.dll BepInEx/plugins/
-   cp stal4gmite.ItemAutoPickupIgnorer.cfg BepInEx/config/
+   cp ChoosyViking.dll BepInEx/plugins/
+   cp shivam13juna.ChoosyViking.cfg BepInEx/config/
    ```
 
 4. **Update Configuration**

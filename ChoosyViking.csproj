@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net481</TargetFramework>
-    <AssemblyName>ItemAutoPickupIgnorer</AssemblyName>
-    <RootNamespace>ItemAutoPickupIgnorer</RootNamespace>
+    <AssemblyName>ChoosyViking</AssemblyName>
+    <RootNamespace>ChoosyViking</RootNamespace>
     <LangVersion>latest</LangVersion>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -20,11 +20,11 @@
 
   <!-- Explicitly include only the files we want -->
   <ItemGroup>
-    <Compile Include="ItemAutoPickupIgnorer.cs" />
+    <Compile Include="ChoosyViking.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <None Include="app.config" />
     <None Include="README.md" />
-    <None Include="stal4gmite.ItemAutoPickupIgnorer.cfg" />
+    <None Include="shivam13juna.ChoosyViking.cfg" />
   </ItemGroup>
 
   <!-- Exclude files and directories we don't want -->

@@ -1,6 +1,6 @@
-# Valheim Item Auto Pickup Ignorer
+# Choosy Viking
 
-### Author: stal4gmite
+### Author: shivam13juna
 
 A Valheim BepInEx plugin that allows users to disable auto pickup of specific items.
 
@@ -78,13 +78,13 @@ Place these files in the `libs/` directory:
 
 1. **Install BepInEx** for Valheim
 2. **Copy the mod DLL** to `BepInEx/plugins/`
-3. **Copy configuration file** `stal4gmite.ItemAutoPickupIgnorer.cfg` to `BepInEx/config/`
+3. **Copy configuration file** `shivam13juna.ChoosyViking.cfg` to `BepInEx/config/`
 4. **Configure items** by editing the config file (remove `#` to ignore items)
 5. **Launch Valheim** and use `Left Ctrl + L` to cycle modes
 
 ### Configuration
 
-Edit `stal4gmite.ItemAutoPickupIgnorer.cfg`:
+Edit `shivam13juna.ChoosyViking.cfg`:
 
 ```ini
 # Remove '#' from items you want to ignore auto-pickup
@@ -103,14 +103,14 @@ Items = #Amber,#Stone,#Wood,#Coal,#Resin,...
 ## 🏗️ Project Structure
 
 ```
-ItemAutoPickupIgnorer/
+ChoosyViking/
 ├── README.md                              # This file
-├── ItemAutoPickupIgnorer.cs               # Main plugin code
-├── ItemAutoPickupIgnorer.csproj           # Modern SDK-style project file
-├── ItemAutoPickupIgnorer.sln             # Visual Studio solution
+├── ChoosyViking.cs                        # Main plugin code
+├── ChoosyViking.csproj                    # Modern SDK-style project file
+├── ChoosyViking.sln                       # Visual Studio solution
 ├── AssemblyInfo.cs                       # Assembly metadata
 ├── app.config                            # .NET configuration
-├── stal4gmite.ItemAutoPickupIgnorer.cfg  # Plugin configuration
+├── shivam13juna.ChoosyViking.cfg         # Plugin configuration
 ├── build.sh                              # macOS/Linux build script
 ├── libs/                                 # Required DLL files
 │   └── README.md                         # Instructions for obtaining DLLs

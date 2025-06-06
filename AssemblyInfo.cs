@@ -1,12 +1,12 @@
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("ItemAutoPickupIgnorer")]
+[assembly: AssemblyTitle("ChoosyViking")]
 [assembly: AssemblyDescription("A Valheim BepInEx plugin that allows users to disable auto pickup of items - Updated for latest Valheim and BepInEx")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("ItemAutoPickupIgnorer")]
-[assembly: AssemblyCopyright("Copyright © 2021-2025")]
+[assembly: AssemblyCompany("shivam13juna")]
+[assembly: AssemblyProduct("ChoosyViking")]
+[assembly: AssemblyCopyright("Copyright © shivam13juna 2021-2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
