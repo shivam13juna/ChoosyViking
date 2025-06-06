@@ -1,5 +1,28 @@
 # Changelog
 
+## Version 2.1.0 - Bug Fixes and Default Mode Change
+
+### 🐛 **Critical Bug Fixes**
+- **Fixed Harmony Patching Error**: Removed incompatible `PlayerUseItemPatch` that was causing mod load failures
+- **Enhanced Item Name Matching**: Improved pickup blocking logic with multiple name format checks
+- **Robust Item Detection**: Added support for GameObject names, ItemData names, and "(Clone)" suffix variations
+
+### ⚙️ **Behavior Changes**
+- **Default Mode**: Mod now starts in "Ignoring Items" mode by default instead of "Normal Valheim Behavior"
+- **Improved Reliability**: Better item pickup blocking with comprehensive name matching logic
+
+### 📊 **Configuration Manager Integration**
+- **Real-time Display**: Added "Currently Ignored Items" status in configuration manager
+- **Live Updates**: Ignored items list updates immediately when items are added/removed
+- **Better UX**: View current ignore list without opening inventory
+
+### 🔧 **Technical Improvements**
+- **Enhanced Debugging**: Added detailed logging for item name comparisons
+- **Code Cleanup**: Removed unused and problematic Harmony patches
+- **Stability**: Improved overall mod reliability and error handling
+
+---
+
 ## Version 2.0.0 - Interactive Item Management
 
 ### 🎯 **Major New Features**

@@ -4,7 +4,7 @@
 
 A Valheim BepInEx plugin that allows users to disable auto pickup of specific items.
 
-**Version:** 2.0.0  
+**Version:** 2.1.0  
 **Target:** .NET Framework 4.8.1  
 **Compatibility:** Cross-platform building (Windows/macOS/Linux)  
 **BepInEx Version:** 5.4.22+ (Compatible with BepInEx 6.0+)  
