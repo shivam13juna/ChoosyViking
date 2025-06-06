@@ -1,5 +1,31 @@
 # Changelog
 
+## Version 2.2.0 - Simplified Single Mode
+
+### 🎯 **Major Simplification**
+- **Removed Multiple Modes**: No more mode cycling - mod now has single behavior
+- **Always Ignore Items**: Mod only ignores items that are in your ignore list
+- **Empty by Default**: No items are ignored initially - all auto-pickup works normally
+- **Simpler Controls**: Removed `Ctrl+L` mode cycling, kept only `I` and `Shift+I` for managing ignore list
+
+### ⚙️ **Behavior Changes**
+- **Single Mode Only**: Mod always checks ignore list and blocks those items from auto-pickup
+- **Clean Startup**: Starts with empty ignore list, user adds items as needed
+- **Streamlined Logic**: Removed complex mode switching and multiple behaviors
+
+### 🔧 **Code Improvements**
+- **Removed Mode Enum**: Eliminated `ChoosyVikingMode` and related code
+- **Simplified Patches**: Harmony patches now only handle ignore list logic
+- **Cleaner Configuration**: Removed toggle key and modifier key settings
+- **Better Performance**: Less overhead without mode checking
+
+### 📝 **User Experience**
+- **Easier to Understand**: One simple behavior - ignore items you don't want
+- **Faster Setup**: No need to understand different modes
+- **More Intuitive**: Works like most users expect - ignore specific items only
+
+---
+
 ## Version 2.1.0 - Bug Fixes and Default Mode Change
 
 ### 🐛 **Critical Bug Fixes**

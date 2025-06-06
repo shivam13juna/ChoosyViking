@@ -8,18 +8,17 @@ using BepInEx.Logging;
 using System.Reflection;
 
 namespace ChoosyViking
-{
-    [BepInPlugin(PluginGUID, PluginName, ModVersion)]
-    [BepInProcess("valheim.exe")]    public class ChoosyViking : BaseUnityPlugin        {
+{    [BepInPlugin(PluginGUID, PluginName, ModVersion)]
+    [BepInProcess("valheim.exe")]
+    public class ChoosyViking : BaseUnityPlugin
+    {
         public const string PluginGUID = "shivam13juna.ChoosyViking";
         public const string PluginName = "Choosy Viking";
-        public const string ModVersion = "2.1.0";
+        public const string ModVersion = "2.2.0";
 
-        public enum ChoosyVikingMode { VALHEIM_DEFAULT, IGNORE_SOME, IGNORE_NONE }private readonly Harmony harmony = new Harmony(PluginGUID);
+        private readonly Harmony harmony = new Harmony(PluginGUID);
         private ConfigEntry<string> items;
-        private ConfigEntry<string> currentIgnoredItems; // New config entry to show current state
-        private ConfigEntry<KeyCode> toggleKey;
-        private ConfigEntry<KeyCode> modifierKey;
+        private ConfigEntry<string> currentIgnoredItems; // Config entry to show current state
         private ConfigEntry<KeyCode> addItemKey;
         private ConfigEntry<KeyCode> removeItemKey;
         
@@ -28,11 +27,9 @@ namespace ChoosyViking
         private static MethodInfo getKeyMethod;
         private static MethodInfo getKeyDownMethod;
         private static bool inputSystemAvailable = false;
-        
-        // Selected item tracking
+          // Selected item tracking
         public static ItemDrop.ItemData selectedItem = null;
-          public static IEnumerable<string> ItemsToIgnore = new List<string> { "Stone(Clone)" };
-        public static ChoosyVikingMode Mode = ChoosyVikingMode.IGNORE_SOME;
+        public static IEnumerable<string> ItemsToIgnore = new List<string>();
         public static ManualLogSource logger;
         public static ChoosyViking Instance;        void Awake()
         {
@@ -46,7 +43,7 @@ namespace ChoosyViking
                 
                 harmony.PatchAll();
                 Logger.LogInfo($"{PluginName} {ModVersion} loaded successfully!");
-                Logger.LogInfo($"Starting in mode: {GetModeDisplayText(Mode)}");                // Configuration
+                Logger.LogInfo("Mod will ignore items in the ignore list (empty by default)");// Configuration
                 items = Config.Bind("Settings",
                                     "Items",
                                     GetDefaultItemList(),
@@ -54,16 +51,6 @@ namespace ChoosyViking
                                                  "CurrentlyIgnoredItems",
                                                  "None",
                                                  "Currently ignored items (READ-ONLY - managed automatically)");
-
-                toggleKey = Config.Bind("Controls",
-                                       "ToggleKey",
-                                       KeyCode.L,
-                                       "Key to toggle pickup modes");
-
-                modifierKey = Config.Bind("Controls",
-                                         "ModifierKey",
-                                         KeyCode.LeftControl,
-                                         "Modifier key that must be held while pressing toggle key");
 
                 addItemKey = Config.Bind("Controls",
                                         "AddItemKey",
@@ -73,7 +60,7 @@ namespace ChoosyViking
                 removeItemKey = Config.Bind("Controls",
                                            "RemoveItemKey",
                                            KeyCode.I,
-                                           "Key to remove selected item from ignore list (use with Shift)");                ItemsToIgnore = items.Value.Split(',')
+                                           "Key to remove selected item from ignore list (use with Shift)");ItemsToIgnore = items.Value.Split(',')
                     .Select(i => i.Trim())
                     .Where(i => !string.IsNullOrEmpty(i) && !i.StartsWith("#"))
                     .Select(i => $"{i}(Clone)");
@@ -178,23 +165,12 @@ namespace ChoosyViking
                 Logger.LogError($"Error checking key down {keyCode}: {ex}");
                 return false;
             }
-        }
-
-        void Update()
+        }        void Update()
         {
             try
             {
                 if (Player.m_localPlayer == null) return;
                 if (!inputSystemAvailable) return;
-                
-                // Toggle mode: Ctrl + L
-                if (SafeGetKey(modifierKey.Value))
-                {
-                    if (SafeGetKeyDown(toggleKey.Value))
-                    {
-                        CycleMode();
-                    }
-                }
                 
                 // Add item to ignore list: I
                 if (SafeGetKeyDown(addItemKey.Value) && !SafeGetKey(KeyCode.LeftShift) && !SafeGetKey(KeyCode.RightShift))
@@ -211,43 +187,7 @@ namespace ChoosyViking
             catch (System.Exception ex)
             {
                 Logger.LogError($"Error in Update: {ex}");
-            }
-        }
-
-        private void CycleMode()
-        {
-            switch (Mode)
-            {
-                case ChoosyVikingMode.VALHEIM_DEFAULT:
-                    Mode = ChoosyVikingMode.IGNORE_SOME;
-                    break;
-                case ChoosyVikingMode.IGNORE_SOME:
-                    Mode = ChoosyVikingMode.IGNORE_NONE;
-                    break;
-                case ChoosyVikingMode.IGNORE_NONE:
-                    Mode = ChoosyVikingMode.VALHEIM_DEFAULT;
-                    break;
-            }
-
-            string modeText = GetModeDisplayText(Mode);
-            Logger.LogInfo($"Switched to mode: {modeText}");
-            
-            if (Player.m_localPlayer != null)
-            {
-                Player.m_localPlayer.Message(MessageHud.MessageType.TopLeft, $"Item Auto Pickup Ignorer: {modeText}");
-            }
-        }
-
-        string GetModeDisplayText(ChoosyVikingMode mode)
-        {
-            return mode switch
-            {
-                ChoosyVikingMode.IGNORE_SOME => "Ignoring Items",
-                ChoosyVikingMode.IGNORE_NONE => "Ignoring Nothing", 
-                ChoosyVikingMode.VALHEIM_DEFAULT => "Normal Valheim Behavior",
-                _ => "Unknown Behavior"
-            };
-        }
+            }        }
 
         void OnDestroy()
         {
@@ -260,42 +200,35 @@ namespace ChoosyViking
             {
                 try
                 {
-                    if (Mode == ChoosyVikingMode.VALHEIM_DEFAULT)
-                        return true; // Let normal behavior happen
-
                     if (character == null || !(character is Player))
                         return true; // Only affect players
 
-                    // If we're ignoring some items and this is one of them, don't auto-pickup
-                    if (Mode == ChoosyVikingMode.IGNORE_SOME)
+                    // Check if this item should be ignored
+                    string itemName = __instance.name;
+                    string itemDataName = __instance.m_itemData?.m_shared?.m_name ?? "unknown";
+                    logger?.LogInfo($"ItemDrop pickup check: GameObject name='{itemName}', ItemData name='{itemDataName}'");
+                    logger?.LogInfo($"Items to ignore: {string.Join(", ", ItemsToIgnore)}");
+                    
+                    // Check multiple possible name formats
+                    bool shouldIgnore = ItemsToIgnore.Contains(itemName) || 
+                                      ItemsToIgnore.Contains(itemDataName) ||
+                                      ItemsToIgnore.Contains($"{itemDataName}(Clone)") ||
+                                      ItemsToIgnore.Contains(itemName.Replace("(Clone)", "")) ||
+                                      ItemsToIgnore.Any(ignored => ignored.Replace("(Clone)", "") == itemDataName);
+                    
+                    if (shouldIgnore)
                     {
-                        // Debug logging to see what we're comparing
-                        string itemName = __instance.name;
-                        string itemDataName = __instance.m_itemData?.m_shared?.m_name ?? "unknown";
-                        logger?.LogInfo($"ItemDrop pickup check: GameObject name='{itemName}', ItemData name='{itemDataName}'");
-                        logger?.LogInfo($"Items to ignore: {string.Join(", ", ItemsToIgnore)}");
-                        
-                        // Check multiple possible name formats
-                        bool shouldIgnore = ItemsToIgnore.Contains(itemName) || 
-                                          ItemsToIgnore.Contains(itemDataName) ||
-                                          ItemsToIgnore.Contains($"{itemDataName}(Clone)") ||
-                                          ItemsToIgnore.Contains(itemName.Replace("(Clone)", "")) ||
-                                          ItemsToIgnore.Any(ignored => ignored.Replace("(Clone)", "") == itemDataName);
-                        
-                        if (shouldIgnore)
+                        logger?.LogInfo($"Blocking pickup for ignored item: {itemName}");
+                        // Only block if this is an auto-pickup (not manual)
+                        // We can detect this by checking if the player is close but not actively trying to pickup
+                        Player player = character as Player;
+                        if (player != null && !player.InPlaceMode() && (Instance == null || !Instance.SafeGetKey(KeyCode.E)))
                         {
-                            logger?.LogInfo($"Blocking pickup for ignored item: {itemName}");
-                            // Only block if this is an auto-pickup (not manual)
-                            // We can detect this by checking if the player is close but not actively trying to pickup
-                            Player player = character as Player;
-                            if (player != null && !player.InPlaceMode() && (Instance == null || !Instance.SafeGetKey(KeyCode.E)))
-                            {
-                                return false; // Block auto-pickup
-                            }
+                            return false; // Block auto-pickup
                         }
                     }
-                    // For IGNORE_NONE mode, always allow pickup
-                    return true;
+                    
+                    return true; // Allow pickup
                 }
                 catch (System.Exception ex)
                 {
@@ -303,9 +236,7 @@ namespace ChoosyViking
                     return true; // Fallback to normal behavior
                 }
             }
-        }
-
-        // Alternative approach: Patch the Player.AutoPickup method more carefully
+        }        // Patch the Player.AutoPickup method to disable ignored items
         [HarmonyPatch(typeof(Player), "AutoPickup")]
         class PlayerAutoPickupPatch
         {
@@ -313,59 +244,17 @@ namespace ChoosyViking
             {
                 try
                 {
-                    if (Mode == ChoosyVikingMode.VALHEIM_DEFAULT)
-                        return true; // Use default Valheim behavior
-
                     if (__instance == null || __instance.IsTeleporting())
                         return true;
 
-                    // For IGNORE_NONE mode, force enable all auto pickups in range
-                    if (Mode == ChoosyVikingMode.IGNORE_NONE)
-                    {
-                        ForceEnableAutoPickup(__instance);
-                        return true; // Let normal pickup logic continue
-                    }
-
-                    // For IGNORE_SOME mode, disable auto pickup for ignored items
-                    if (Mode == ChoosyVikingMode.IGNORE_SOME)
-                    {
-                        DisableIgnoredItemsAutoPickup(__instance);
-                        return true; // Let normal pickup logic continue
-                    }
-
-                    return true;
+                    // Disable auto pickup for ignored items
+                    DisableIgnoredItemsAutoPickup(__instance);
+                    return true; // Let normal pickup logic continue
                 }
                 catch (System.Exception ex)
                 {
                     logger?.LogError($"Error in Player.AutoPickup patch: {ex}");
                     return true; // Fallback to normal behavior
-                }
-            }
-
-            private static void ForceEnableAutoPickup(Player player)
-            {
-                try
-                {
-                    float range = 2f; // Default range
-                    Vector3 position = player.transform.position + Vector3.up;
-                    Collider[] colliders = Physics.OverlapSphere(position, range, LayerMask.GetMask("item"));
-
-                    foreach (Collider collider in colliders)
-                    {
-                        if (collider?.attachedRigidbody == null) continue;
-
-                        ItemDrop itemDrop = collider.attachedRigidbody.GetComponent<ItemDrop>();
-                        if (itemDrop == null) continue;
-
-                        ZNetView netView = itemDrop.GetComponent<ZNetView>();
-                        if (netView == null || !netView.IsValid()) continue;
-
-                        itemDrop.m_autoPickup = true;
-                    }
-                }
-                catch (System.Exception ex)
-                {
-                    logger?.LogError($"Error in ForceEnableAutoPickup: {ex}");
                 }
             }            private static void DisableIgnoredItemsAutoPickup(Player player)
             {

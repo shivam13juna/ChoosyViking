@@ -2,9 +2,9 @@
 
 ### Author: shivam13juna
 
-A Valheim BepInEx plugin that allows users to disable auto pickup of specific items.
+A Valheim BepInEx plugin that allows users to ignore auto pickup of specific items. By default, no items are ignored and all auto-pickup works normally. Users can add items to an ignore list to prevent those items from being auto-picked up.
 
-**Version:** 2.1.0  
+**Version:** 2.2.0  
 **Target:** .NET Framework 4.8.1  
 **Compatibility:** Cross-platform building (Windows/macOS/Linux)  
 **BepInEx Version:** 5.4.22+ (Compatible with BepInEx 6.0+)  
@@ -14,14 +14,13 @@ A Valheim BepInEx plugin that allows users to disable auto pickup of specific it
 
 ## 🎮 What does this mod do?
 
-This plugin provides fine-grained control over Valheim's auto-pickup system:
+This plugin provides simple control over Valheim's auto-pickup system:
 
-- **3 modes**: Normal Valheim behavior, ignore specific items, or ignore nothing
+- **Single mode**: Only ignore items that are in your ignore list
 - **Interactive item management**: Click items in inventory + press `I` to add/remove from ignore list
 - **No config file editing**: Manage ignore list entirely in-game
-- **Configurable controls**: Customize toggle and modifier keys
-- **In-game controls**: Press `Left Ctrl + L` to cycle through modes (configurable)
-- **Real-time feedback**: On-screen messages show current mode and item changes
+- **Empty by default**: No items are ignored until you add them
+- **Real-time feedback**: On-screen messages show when items are added/removed
 - **Improved compatibility**: Updated for latest Valheim and BepInEx versions
 - **Better error handling**: Comprehensive logging and error recovery
 
@@ -80,19 +79,16 @@ Place these files in the `libs/` directory:
 1. **Install BepInEx** for Valheim
 2. **Copy the mod DLL** to `BepInEx/plugins/`
 3. **Copy configuration file** `shivam13juna.ChoosyViking.cfg` to `BepInEx/config/`
-4. **Configure items** by editing the config file (remove `#` to ignore items)
-5. **Launch Valheim** and use `Left Ctrl + L` to cycle modes
+4. **Launch Valheim** and use `I` to add items to ignore list
 
 ### Configuration
 
-**NEW in v2.0:** You can now manage your ignore list entirely in-game!
-
-#### **Interactive Method (Recommended):**
+**Interactive Method (Recommended):**
 1. **Add items**: Click item in inventory → Press `I`
 2. **Remove items**: Click item in inventory → Press `Shift + I`
 3. **No file editing needed!**
 
-#### **Manual Configuration (Optional):**
+**Manual Configuration (Optional):**
 Edit `shivam13juna.ChoosyViking.cfg`:
 
 ```ini
@@ -100,14 +96,12 @@ Edit `shivam13juna.ChoosyViking.cfg`:
 Items = #Amber,#Stone,#Wood,#Coal,#Resin,...
 ```
 
+The mod starts with an empty ignore list by default. All items will be auto-picked up until you add specific items to the ignore list.
+
 ### In-Game Controls
 
-- **Left Ctrl + L**: Cycle through modes
-  - **Normal Valheim Behavior**: Default game auto-pickup
-  - **Ignoring Items**: Skip configured items
-  - **Ignoring Nothing**: Force pickup everything
-- **I**: Add selected inventory item to ignore list (NEW!)
-- **Shift + I**: Remove selected inventory item from ignore list (NEW!)
+- **I**: Add selected inventory item to ignore list
+- **Shift + I**: Remove selected inventory item from ignore list
 
 ---
 
