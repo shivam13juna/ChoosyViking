@@ -192,51 +192,9 @@ namespace ChoosyViking
         void OnDestroy()
         {
             harmony?.UnpatchSelf();
-        }        [HarmonyPatch(typeof(ItemDrop), "Pickup")]
-        class ItemDropPickupPatch
-        {
-            // Patch the actual pickup method to control behavior
-            static bool Prefix(ItemDrop __instance, Humanoid character)
-            {
-                try
-                {
-                    if (character == null || !(character is Player))
-                        return true; // Only affect players
+        }
 
-                    // Check if this item should be ignored
-                    string itemName = __instance.name;
-                    string itemDataName = __instance.m_itemData?.m_shared?.m_name ?? "unknown";
-                    logger?.LogInfo($"ItemDrop pickup check: GameObject name='{itemName}', ItemData name='{itemDataName}'");
-                    logger?.LogInfo($"Items to ignore: {string.Join(", ", ItemsToIgnore)}");
-                    
-                    // Check multiple possible name formats
-                    bool shouldIgnore = ItemsToIgnore.Contains(itemName) || 
-                                      ItemsToIgnore.Contains(itemDataName) ||
-                                      ItemsToIgnore.Contains($"{itemDataName}(Clone)") ||
-                                      ItemsToIgnore.Contains(itemName.Replace("(Clone)", "")) ||
-                                      ItemsToIgnore.Any(ignored => ignored.Replace("(Clone)", "") == itemDataName);
-                    
-                    if (shouldIgnore)
-                    {
-                        logger?.LogInfo($"Blocking pickup for ignored item: {itemName}");
-                        // Only block if this is an auto-pickup (not manual)
-                        // We can detect this by checking if the player is close but not actively trying to pickup
-                        Player player = character as Player;
-                        if (player != null && !player.InPlaceMode() && (Instance == null || !Instance.SafeGetKey(KeyCode.E)))
-                        {
-                            return false; // Block auto-pickup
-                        }
-                    }
-                    
-                    return true; // Allow pickup
-                }
-                catch (System.Exception ex)
-                {
-                    logger?.LogError($"Error in ItemDrop.Pickup patch: {ex}");
-                    return true; // Fallback to normal behavior
-                }
-            }
-        }        // Patch the Player.AutoPickup method to disable ignored items
+        // Patch the Player.AutoPickup method to disable ignored items
         [HarmonyPatch(typeof(Player), "AutoPickup")]
         class PlayerAutoPickupPatch
         {
