@@ -14,7 +14,7 @@ namespace ChoosyViking
     {
         public const string PluginGUID = "shivam13juna.ChoosyViking";
         public const string PluginName = "Choosy Viking";
-        public const string ModVersion = "2.2.0";
+        public const string ModVersion = "2.2.1";
 
         private readonly Harmony harmony = new Harmony(PluginGUID);
         private ConfigEntry<string> items;
